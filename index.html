@@ -18,6 +18,7 @@
         .menu-item { border-bottom: 1px solid #eee; padding: 12px 0; }
         .dark-mode .menu-item { border-bottom: 1px solid #374151; }
         
+        /* Gaya Nota Thermal 58mm */
         #receipt-area { 
             width: 58mm; 
             padding: 10px; 
@@ -44,7 +45,7 @@
     <div class="container mx-auto px-4 py-6 max-w-md">
         <div class="text-center mb-8">
             <img src="logo_kodpen.png" alt="Logo Kodpen" class="mx-auto w-32 mb-4" onerror="this.src='https://via.placeholder.com/150?text=Logo+Kodpen'">
-            <h2 class="text-2xl font-extrabold text-starbucks italic uppercase tracking-tighter">"So Ba Kopi Bro?"</h2>
+            <h2 class="text-2xl font-extrabold text-starbucks italic tracking-tighter uppercase">"So Ba Kopi Bro?"</h2>
         </div>
 
         <div class="space-y-6">
@@ -59,4 +60,101 @@
                 </select>
             </div>
 
-            <div class="bg-white p-4
+            <div class="bg-white p-4 rounded-xl shadow">
+                <label class="block font-bold mb-2 border-b pb-2 uppercase text-xs tracking-widest text-gray-400">Daftar Menu:</label>
+                
+                <div class="menu-category uppercase text-xs">Iced Coffee</div>
+                <div id="iced-coffee-list"></div>
+                
+                <div class="menu-category uppercase text-xs">Non Coffee</div>
+                <div id="non-coffee-list"></div>
+                
+                <div class="menu-category uppercase text-xs">Manual Brew</div>
+                <div id="manual-brew-list"></div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow">
+                <label class="block font-bold mb-4">Metode Pembayaran:</label>
+                <div class="space-y-2">
+                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-green-50 dark:hover:bg-gray-700">
+                        <input type="radio" name="payment" value="Transfer BNI" class="mr-3"> Transfer BNI
+                    </label>
+                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-green-50 dark:hover:bg-gray-700">
+                        <input type="radio" name="payment" value="QRIS" class="mr-3"> QRIS (Barcode)
+                    </label>
+                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-green-50 dark:hover:bg-gray-700">
+                        <input type="radio" name="payment" value="Tunai" class="mr-3" checked> Tunai (Kasir)
+                    </label>
+                </div>
+                <div id="payInfo" class="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg hidden text-sm"></div>
+            </div>
+
+            <div class="text-center py-6">
+                <div class="text-xl font-bold mb-4 text-gray-800 dark:text-white">Total: <span id="totalHarga" class="text-starbucks text-2xl">Rp 0</span></div>
+                <button id="btnPesan" onclick="kirimPesanan()" class="w-full bg-starbucks text-white font-bold py-4 rounded-full shadow-xl active:scale-95 transition disabled:bg-gray-400">
+                    PESAN SEKARANG
+                </button>
+                <button id="btnMyBill" onclick="unduhStruk()" class="hidden w-full mt-4 bg-blue-600 text-white font-bold py-4 rounded-full shadow-xl animate-bounce">
+                    <i class="fas fa-file-invoice mr-2"></i> MY BILL (UNDUH NOTA)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="receipt-hidden">
+        <div id="receipt-area">
+            <div style="text-align: center; border-bottom: 1px dashed black; padding-bottom: 5px; margin-bottom: 5px;">
+                <strong style="font-size: 14px;">KODPEN COFFEE</strong><br>
+                "So Ba Kopi Bro?"
+            </div>
+            <div id="receipt-meta" style="font-size: 10px; margin-bottom: 5px;"></div>
+            <div style="border-bottom: 1px dashed black; margin-bottom: 5px;"></div>
+            <div id="receipt-items"></div>
+            <div style="border-top: 1px dashed black; margin-top: 5px; padding-top: 5px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                    <span>TOTAL:</span>
+                    <span id="receipt-total"></span>
+                </div>
+                <div style="font-size: 10px; margin-top: 3px;">Metode: <span id="receipt-pay"></span></div>
+            </div>
+            <div style="text-align: center; margin-top: 15px; border-top: 1px dashed black; padding-top: 5px; font-size: 10px;">
+                Terima kasih! Ditunggu<br>kedatangannya kembali di<br><strong>KODPEN COFFEE</strong>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MASUKKAN LINK APPS SCRIPT ANDA DI SINI
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbz9iL9Q2S3FXcN7SDw5an93qQOe5FvJSvJNdcfKVmvrB0X57oNk0M6MelHUlLGTYmkQZA/exec';
+
+        const menuData = {
+            iced: [
+                {n: "Street Coffee", h: 15000}, {n: "Americano", h: 15000},
+                {n: "ButterStreet", h: 20000}, {n: "Aren Royale", h: 20000}, {n: "Pop Rock", h: 20000}
+            ],
+            non: [
+                {n: "Chocolate", h: 18000}, {n: "Matcha", h: 18000}, {n: "Red Velvet", h: 18000}
+            ],
+            manual: [ {n: "Hot Coffee Milk", h: 13000} ]
+        };
+
+        let keranjang = {};
+        let totalSeluruhnya = 0;
+        let lastOrderData = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup Meja
+            const selectMeja = document.getElementById('nomorMeja');
+            for(let i=1; i<=20; i++) {
+                let opt = document.createElement('option');
+                opt.value = i; opt.innerText = "Meja " + i;
+                selectMeja.appendChild(opt);
+            }
+
+            // Render Menu
+            renderList('iced-coffee-list', menuData.iced);
+            renderList('non-coffee-list', menuData.non);
+            renderList('manual-brew-list', menuData.manual);
+
+            // Dark Mode Toggle
+            document.getElementById('darkToggle').addEventListener('
