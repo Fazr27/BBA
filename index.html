@@ -17,6 +17,7 @@
         #receipt-area { width: 58mm; padding: 10px; background: white; color: black; font-family: monospace; font-size: 11px; line-height: 1.2; }
         .receipt-hidden { position: absolute; left: -9999px; top: 0; }
         
+        /* Gaya Tombol Mati & Buram */
         #btnPesan:disabled {
             opacity: 0.4;
             cursor: not-allowed;
@@ -65,20 +66,20 @@
                 <label class="flex items-start p-3 border-2 border-blue-100 rounded-lg cursor-pointer bg-blue-50/30">
                     <input type="radio" name="payment" value="Transfer BNI" onchange="valBtn()" class="mt-1 mr-3"> 
                     <div class="flex flex-col">
-                        <span class="font-black text-blue-800 text-base leading-tight">BANK BNI (bank negara indonesia)</span>
-                        <span class="text-blue-700 font-extrabold text-lg tracking-wider">0388924011</span>
+                        <span class="font-black text-blue-800 text-base leading-tight uppercase">BANK BNI (bank negara indonesia)</span>
+                        <span class="text-blue-700 font-extrabold text-xl tracking-wider">0388924011</span>
                         <span class="text-blue-900 font-bold text-sm uppercase">A.n FAZRIN HARUN</span>
                     </div>
                 </label>
 
                 <label class="flex items-center p-3 border rounded-lg cursor-pointer">
                     <input type="radio" name="payment" value="QRIS" onchange="valBtn()" class="mr-3"> 
-                    <span class="font-bold text-gray-700">QRIS (Scan Barcode)</span>
+                    <span class="font-bold text-gray-700 uppercase text-sm">QRIS (Scan Barcode)</span>
                 </label>
 
                 <label class="flex items-center p-3 border rounded-lg cursor-pointer">
                     <input type="radio" name="payment" value="Tunai" onchange="valBtn()" class="mr-3" checked> 
-                    <span class="font-bold text-gray-700">Tunai (Bayar di Kasir)</span>
+                    <span class="font-bold text-gray-700 uppercase text-sm">Tunai (Bayar di Kasir)</span>
                 </label>
             </div>
             
@@ -89,14 +90,25 @@
                         <i class="fas fa-download mr-1"></i> Simpan QR Code
                     </button>
                 </div>
-                <p class="text-[10px] font-bold text-red-600 mb-2 uppercase text-center">Wajib Upload Bukti!</p>
+                <p class="text-[10px] font-bold text-red-600 mb-2 uppercase text-center">Wajib Upload Bukti Transfer/QRIS!</p>
                 <input type="file" id="buktiFile" accept="image/*" onchange="valBtn()" class="text-xs w-full">
             </div>
         </div>
 
         <div class="text-center py-6 bg-white rounded-xl shadow-2xl px-4 sticky bottom-4 border-t-2 border-gray-100">
-            <div id="statusContainer" class="hidden mb-4 space-y-2">
+            <div id="statusContainer" class="hidden mb-4 space-y-3">
                 
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div class="bg-gray-100 p-2 rounded-lg border border-gray-300">
+                        <p class="text-[9px] font-bold text-gray-500 uppercase">No. Antrean</p>
+                        <p id="txtNoAntrean" class="text-xl font-black text-black">#0</p>
+                    </div>
+                    <div class="bg-orange-50 p-2 rounded-lg border border-orange-200">
+                        <p class="text-[9px] font-bold text-orange-600 uppercase">Sisa Antrean</p>
+                        <p id="txtSisaAntrean" class="text-xl font-black text-orange-700">0</p>
+                    </div>
+                </div>
+
                 <div id="msgTunai" class="hidden p-3 bg-red-100 border-2 border-red-600 rounded-lg text-red-700 text-xs font-black blink-notif uppercase leading-tight">
                     segera lakukan pembayaran di kasir agar pesanan anda di proses.
                 </div>
@@ -126,7 +138,9 @@
     <div class="receipt-hidden"><div id="receipt-area"></div></div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzmFG5VBjx9_dIfFpKfXKZ1WT-Kxfa3J2yGFqP236uxQ6R8wiwN0mLQenyPZaFLSKfT4A/exec';
+        // PASTI KAN SCRIPT URL SESUAI DENGAN DEPLOYMENT TERBARU ANDA
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwqj1DqEnnMDenwpd-oq0xq6oJD8DoEy5zLMI79B49HhQXybkmscveuiKd8xOPMtnex/exec';
+        
         const menuData = { iced:[{n:"Street Coffee", h:15000},{n:"Americano", h:15000},{n:"ButterStreet", h:20000},{n:"Aren Royale", h:20000},{n:"Pop Rock", h:20000}], non:[{n:"Chocolate", h:18000},{n:"Matcha", h:18000},{n:"Red Velvet", h:18000}], manual:[{n:"Hot Coffee Milk", h:13000}] };
         
         let keranjang = {}; let pollStatus; let currentStatus = ""; let jemputInterval; let isMuted = false;
@@ -150,13 +164,12 @@
             valBtn();
         });
 
-        // Toggle Mute: Mempengaruhi semua suara termasuk alarm jemput
         function toggleMute() {
             isMuted = !isMuted;
             const icon = document.getElementById('muteIcon');
             if(isMuted) {
                 icon.className = 'fas fa-volume-mute fa-lg text-red-500';
-                clearInterval(jemputInterval); // Langsung hentikan jika sedang bunyi
+                clearInterval(jemputInterval);
             } else {
                 icon.className = 'fas fa-volume-up fa-lg text-green-600';
             }
@@ -167,17 +180,14 @@
         }
 
         function triggerNotif(t, b, s) { 
-            // Cek apakah muted aktif sebelum memutar suara jemput
             if(!isMuted && s === "jemput") {
                 let cnt = 0;
-                clearInterval(jemputInterval); // Bersihkan interval sebelumnya
+                clearInterval(jemputInterval);
                 jemputInterval = setInterval(() => {
                     if(!isMuted) {
                         soundJemput.play().catch(()=>{});
                         cnt++; if(cnt >= 15) clearInterval(jemputInterval);
-                    } else {
-                        clearInterval(jemputInterval);
-                    }
+                    } else { clearInterval(jemputInterval); }
                 }, 1500);
             }
             if (Notification.permission === "granted") new Notification(t, { body: b, icon: "logo_kodpen.png" }); 
@@ -185,7 +195,6 @@
 
         function stopJemputAlarm() {
             clearInterval(jemputInterval);
-            document.getElementById('msgJemput').classList.remove('shadow-2xl');
             document.getElementById('btnStopJemput').innerText = "MENUNGGU BARISTA...";
         }
 
@@ -209,13 +218,13 @@
             if(savedK) { keranjang = JSON.parse(savedK); updateRingkasan(); Object.keys(keranjang).forEach(k => { const el = document.getElementById('q-'+k.replace(/\s+/g,'')); if(el) el.innerText = keranjang[k].q; }); }
             if(savedID && savedData) {
                 lastOrder = JSON.parse(savedData);
-                fetch(`${scriptURL}?orderId=${savedID}`).then(r => r.text()).then(status => {
-                    if (status !== "Selesai" && status !== "NotFound") { 
+                fetch(`${scriptURL}?orderId=${savedID}`).then(r => r.json()).then(data => {
+                    if (data.status !== "Selesai" && data.status !== "NotFound") { 
                         document.getElementById('btnPesan').classList.add('hidden'); 
                         document.getElementById('btnMyBill').classList.remove('hidden'); 
-                        startPolling(savedID, lastOrder.pembayaran, status); 
+                        startPolling(savedID, lastOrder.pembayaran, data.status); 
                     } else { localStorage.clear(); }
-                });
+                }).catch(() => localStorage.clear());
             }
         }
 
@@ -247,12 +256,18 @@
         function startPolling(id, pay, initialStatus) {
             currentStatus = initialStatus; document.getElementById('statusContainer').classList.remove('hidden'); updateUI(initialStatus, pay);
             pollStatus = setInterval(() => {
-                fetch(`${scriptURL}?orderId=${id}`).then(res => res.text()).then(status => {
-                    if (status !== currentStatus) {
-                        if (status === "Proses") triggerNotif("KODPEN COFFEE", "Pesanan Sedang Diproses! ☕", "proses");
-                        else if (status === "Jemput") triggerNotif("KODPEN COFFEE", "SIAP DIJEMPUT! 🔔", "jemput");
-                        else if (status === "Selesai") { clearInterval(jemputInterval); localStorage.clear(); window.location.reload(); }
-                        updateUI(status, pay); currentStatus = status;
+                fetch(`${scriptURL}?orderId=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Update Angka Antrean secara real-time
+                    document.getElementById('txtNoAntrean').innerText = "#" + data.antrean;
+                    document.getElementById('txtSisaAntrean').innerText = data.sisa;
+
+                    if (data.status !== currentStatus) {
+                        if (data.status === "Proses") triggerNotif("KODPEN COFFEE", "Pesanan Sedang Diproses! ☕", "proses");
+                        else if (data.status === "Jemput") triggerNotif("KODPEN COFFEE", "SIAP DIJEMPUT! 🔔", "jemput");
+                        else if (data.status === "Selesai") { clearInterval(jemputInterval); localStorage.clear(); window.location.reload(); }
+                        updateUI(data.status, pay); currentStatus = data.status;
                     }
                 });
             }, 4000);
@@ -262,16 +277,9 @@
             const mT = document.getElementById('msgTunai'); const mP = document.getElementById('msgProses'); const mJ = document.getElementById('msgJemput'); const mB = document.getElementById('msgBatal');
             mT.classList.add('hidden'); mP.classList.add('hidden'); mJ.classList.add('hidden'); mB.classList.add('hidden');
             
-            // Logika Sesuai Permintaan:
-            // 1. Antri & Tunai -> Merah Berkedip
             if(s === "Antri" && pay === "Tunai") mT.classList.remove('hidden');
-            
-            // 2. Proses -> Hijau Berkedip (Berlaku semua metode bayar)
             if(s === "Proses") mP.classList.remove('hidden');
-            
-            // 3. Jemput -> Biru Berkedip (Berlaku semua metode bayar)
             if(s === "Jemput") mJ.classList.remove('hidden');
-            
             if(s === "Batal") mB.classList.remove('hidden');
         }
 
