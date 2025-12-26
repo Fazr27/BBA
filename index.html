@@ -221,7 +221,7 @@
 
             lastOrderData = { meja, bayar, listStruk, total: "Rp " + totalSeluruhnya.toLocaleString('id-ID'), date: new Date().toLocaleString('id-ID') };
             
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbziH8Zva4csGO-BhTcXT7C5FNv0ZAG_FAYwuB4pPnvVmLJ7rCwbBLfpEwaGZug6ks2K/exec';
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbyY7QZn5_-wCrjbzLk2lRaVQxO_DSMFzFvl5zkZgBSg9qlU3eVG_vxE-p3KpktI-_D4/exec';
             
             alert("Pesanan sedang dikirim ke barista...");
             fetch(scriptURL, { method: 'POST', body: JSON.stringify({ meja, pesanan: detailOrder, pembayaran: bayar, total: lastOrderData.total }) })
