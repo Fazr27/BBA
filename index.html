@@ -31,7 +31,7 @@
         }
 
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .sold-out { filter: grayscale(1); opacity: 0.6; pointer-events: none; position: relative; }
+        .sold-out { filter: grayscale(1); opacity: 0.6; position: relative; }
         .sold-out::after { 
             content: "SOLD OUT"; position: absolute; top: 50%; left: 50%; 
             transform: translate(-50%, -50%) rotate(-15deg); 
@@ -244,15 +244,24 @@
             menus.filter(m => m.cat === cat).forEach(item => {
                 const isClose = item.s === "Close";
                 const itemID = cleanID(item.n);
-                catHtml += `<div class="glass-card p-4 rounded-3xl flex justify-between items-center shadow-sm ${isClose ? 'sold-out' : 'active:bg-gray-50'} transition-all hover:shadow-md" onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}">
+                
+                // Area kartu hanya bisa diklik untuk menambah (qty 1) jika menu Ready
+                catHtml += `<div class="glass-card p-4 rounded-3xl flex justify-between items-center shadow-sm ${isClose ? 'sold-out' : 'active:bg-gray-50'}" 
+                            onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}">
                     <div class="flex-1">
                         <p class="font-black text-gray-800 text-sm uppercase">${item.n}</p>
                         <p class="text-xs font-bold text-[#00704A] mt-1">Rp ${Number(item.h).toLocaleString('id-ID')}</p>
                     </div>
                     <div class="flex items-center gap-4" onclick="event.stopPropagation()">
                         <button onclick="qty('${item.n}',${item.h},-1)" class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center font-black">-</button>
+                        
                         <span id="q-${itemID}" class="font-black text-sm w-4 text-center">0</span>
-                        <button onclick="qty('${item.n}',${item.h},1)" class="w-10 h-10 rounded-2xl bg-[#00704A] text-white flex items-center justify-center font-black shadow-md">+</button>
+                        
+                        <button onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}" 
+                                ${isClose ? 'disabled' : ''} 
+                                class="w-10 h-10 rounded-2xl bg-[#00704A] text-white flex items-center justify-center font-black shadow-md disabled:bg-gray-300">
+                            +
+                        </button>
                     </div>
                 </div>`;
             });
