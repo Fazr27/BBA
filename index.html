@@ -63,20 +63,22 @@
         </button>
     </nav>
 
-    <div class="container mx-auto px-4 py-6 max-w-md">
-        <div class="text-center mb-6">
+    <div class="container mx-auto px-4 py-6 max-w-md md:max-w-2xl transition-all duration-300">
+        <div class="text-center mb-8 px-2">
             <img src="https://raw.githubusercontent.com/kodpenlbt-cmd/Kodpen_Client/main/logo_kodpen.png" 
-                 class="mx-auto w-20 mb-2 rounded-full border-4 border-white shadow-lg"
-                 onerror="this.src='https://via.placeholder.com/100?text=KODPEN'">
+                 class="mx-auto w-32 md:w-48 mb-4 rounded-full border-4 border-white shadow-xl transition-all duration-300"
+                 onerror="this.src='https://via.placeholder.com/150?text=KODPEN'">
             
-            <div class="px-2 my-4">
+            <div class="my-6 max-w-md mx-auto">
                 <img src="https://raw.githubusercontent.com/kodpenlbt-cmd/Kodpen_Client/main/ThisOurMenu.jpg" 
-                     class="w-full max-w-sm mx-auto rounded-3xl shadow-2xl border-2 border-white object-cover"
+                     class="w-full rounded-3xl shadow-2xl border-2 border-white object-cover"
                      alt="Our Menu"
                      onerror="this.style.display='none'">
             </div>
 
-            <h2 class="text-xl font-black text-[#00704A] italic uppercase">"So Ba Kopi Bro?"</h2>
+            <h2 class="text-xl md:text-2xl font-black text-[#00704A] italic uppercase tracking-tighter">
+                "So Ba Kopi Bro?"
+            </h2>
         </div>
 
         <div class="glass-card p-5 rounded-3xl shadow-md mb-4 border-b-4 border-[#00704A]">
@@ -92,8 +94,8 @@
             </select>
         </div>
 
-        <div id="menuContainer" class="space-y-6 mb-6">
-            <div class="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+        <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
                 <div class="loading-spinner"></div>
                 <p class="font-bold uppercase text-[10px] tracking-widest">Menyiapkan Menu...</p>
             </div>
@@ -159,16 +161,18 @@
     </div>
 
     <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-10px_25px_rgba(0,0,0,0.1)] z-40">
-        <div class="max-w-md mx-auto">
-            <div class="flex justify-between items-center mb-4 px-2">
+        <div class="max-w-md md:max-w-2xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex justify-between items-center px-2 md:gap-8">
                 <span class="text-xs font-black text-gray-400 uppercase">Total Bayar:</span>
                 <span id="totalHarga" class="text-3xl font-black text-[#00704A]">Rp 0</span>
             </div>
-            <p id="payWarning" class="text-[10px] font-bold text-red-600 uppercase text-center mb-2 italic">Lengkapi Nama, Meja & Menu</p>
-            <button id="btnPesan" onclick="kirimPesanan()" disabled class="btn-emboss w-full bg-[#00704A] text-white font-black py-5 rounded-3xl uppercase tracking-widest text-sm disabled:bg-gray-400">
-                PESAN SEKARANG
-            </button>
-            <button id="btnMyBill" onclick="unduhStruk()" class="hidden btn-emboss w-full bg-blue-600 text-white font-black py-5 rounded-3xl uppercase text-xs mt-2">DOWNLOAD NOTA</button>
+            <div class="flex-1 w-full">
+                <p id="payWarning" class="text-[10px] font-bold text-red-600 uppercase text-center mb-2 italic">Lengkapi Nama, Meja & Menu</p>
+                <button id="btnPesan" onclick="kirimPesanan()" disabled class="btn-emboss w-full bg-[#00704A] text-white font-black py-5 rounded-3xl uppercase tracking-widest text-sm disabled:bg-gray-400">
+                    PESAN SEKARANG
+                </button>
+                <button id="btnMyBill" onclick="unduhStruk()" class="hidden btn-emboss w-full bg-blue-600 text-white font-black py-5 rounded-3xl uppercase text-xs mt-2">DOWNLOAD NOTA</button>
+            </div>
         </div>
     </div>
 
@@ -224,7 +228,7 @@
                 updateRingkasan();
             }
         } catch (e) { 
-            document.getElementById('menuContainer').innerHTML = "<p class='text-center text-red-500 font-bold py-10'>Gagal memuat menu. Cek koneksi Anda.</p>"; 
+            document.getElementById('menuContainer').innerHTML = "<p class='text-center text-red-500 font-bold py-10 col-span-2'>Gagal memuat menu. Cek koneksi Anda.</p>"; 
         }
     }
 
@@ -233,19 +237,19 @@
         container.innerHTML = "";
         const categories = [...new Set(menus.map(m => m.cat))];
         categories.forEach(cat => {
-            let catHtml = `<div class="mb-4"><h3 class="text-xs font-black uppercase tracking-widest border-l-4 border-[#00704A] pl-3 mb-4 text-gray-500">${cat}</h3><div class="grid grid-cols-1 gap-3">`;
+            let catHtml = `<div class="mb-4 col-span-1 md:col-span-2"><h3 class="text-xs font-black uppercase tracking-widest border-l-4 border-[#00704A] pl-3 mb-4 text-gray-500">${cat}</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
             menus.filter(m => m.cat === cat).forEach(item => {
                 const isClose = item.s === "Close";
                 const itemID = cleanID(item.n);
-                catHtml += `<div class="glass-card p-4 rounded-3xl flex justify-between items-center shadow-sm ${isClose ? 'sold-out' : 'active:bg-gray-50'}" onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}">
+                catHtml += `<div class="glass-card p-4 rounded-3xl flex justify-between items-center shadow-sm ${isClose ? 'sold-out' : 'active:bg-gray-50'} transition-all hover:shadow-md" onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}">
                     <div class="flex-1">
                         <p class="font-black text-gray-800 text-sm uppercase">${item.n}</p>
                         <p class="text-xs font-bold text-[#00704A] mt-1">Rp ${Number(item.h).toLocaleString('id-ID')}</p>
                     </div>
                     <div class="flex items-center gap-4" onclick="event.stopPropagation()">
-                        <button onclick="qty('${item.n}',${item.h},-1)" class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center font-black">-</button>
+                        <button onclick="qty('${item.n}',${item.h},-1)" class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center font-black transition-transform active:scale-90">-</button>
                         <span id="q-${itemID}" class="font-black text-sm w-4 text-center">0</span>
-                        <button onclick="qty('${item.n}',${item.h},1)" class="w-10 h-10 rounded-2xl bg-[#00704A] text-white flex items-center justify-center font-black shadow-md">+</button>
+                        <button onclick="qty('${item.n}',${item.h},1)" class="w-10 h-10 rounded-2xl bg-[#00704A] text-white flex items-center justify-center font-black shadow-md transition-transform active:scale-90">+</button>
                     </div>
                 </div>`;
             });
@@ -380,7 +384,7 @@
             const cont = document.getElementById('ringkasanContainer');
             const list = document.getElementById('ringkasanList');
             cont.classList.remove('hidden');
-            list.innerHTML = `<div class="mb-2 text-[#00704A] font-black text-xs">PEMESAN: ${lastOrder.nama}</div>`;
+            list.innerHTML = `<div class="mb-2 text-[#00704A] font-black text-xs uppercase">PEMESAN: ${lastOrder.nama}</div>`;
             lastOrder.pesanan.split(', ').forEach(item => {
                 list.innerHTML += `<div class="flex justify-between items-center text-[11px] font-bold text-gray-700 uppercase"><span>${item}</span></div>`;
             });
