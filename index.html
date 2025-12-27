@@ -429,7 +429,16 @@
                     msg.className = "p-4 rounded-2xl font-black text-xs bg-blue-600 text-white shadow-xl blink-notif";
                     document.getElementById('btnStopJemput').classList.remove('hidden');
                     if(!isMuted && !alarmManuallyStopped) soundJemput.play().catch(()=>{});
-                } else if(data.status === "Selesai") {
+                } 
+                // --- TAMBAHKAN LOGIKA BATAL DI SINI ---
+                else if(data.status === "Batal") {
+                    localStorage.clear(); // Hapus data dari HP agar tidak stuck
+                    clearInterval(pollingTimer);
+                    alert("Maaf, pesanan Anda telah dibatalkan oleh barista.");
+                    location.reload();
+                } 
+                // -------------------------------------
+                else if(data.status === "Selesai") {
                     localStorage.clear(); 
                     clearInterval(pollingTimer);
                     alert("Terima kasih sudah memesan! Sampai jumpa kembali.");
