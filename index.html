@@ -32,7 +32,7 @@
 
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
-        /* PERBAIKAN: pointer-events dihapus agar tombol minus tetap aktif di item Sold Out */
+        /* PERBAIKAN: Tombol minus tetap aktif di item Sold Out agar bisa dihapus */
         .sold-out { filter: grayscale(1); opacity: 0.6; position: relative; }
         .sold-out::after { 
             content: "SOLD OUT"; position: absolute; top: 50%; left: 50%; 
@@ -305,9 +305,8 @@
     }
 
     async function kirimPesanan() {
-        // PANCINGAN SUARA (VITAL UNTUK HP)
-        const unlockVoice = new SpeechSynthesisUtterance("");
-        window.speechSynthesis.speak(unlockVoice);
+        // PANCINGAN AUDIO UNTUK MOBILE UNLOCK
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
 
         const btn = document.getElementById('btnPesan');
         btn.disabled = true; btn.innerText = "MENGIRIM...";
@@ -378,13 +377,14 @@
                     msg.innerText = "PESANAN SIAP! SILAKAN JEMPUT 🔔"; msg.className = "p-4 rounded-2xl font-black text-xs bg-blue-600 text-white shadow-xl blink-notif";
                     document.getElementById('btnStopJemput').classList.remove('hidden');
                     
-                    // TTS BAHASA INDONESIA (DIPERBAIKI UNTUK HP)
+                    // TTS DENGAN NAMA PELANGGAN (AUTO-UNLOCK MOBILE)
                     if(!isMuted && !alarmManuallyStopped) {
-                        window.speechSynthesis.cancel(); // Bersihkan queue
-                        const pesanTTS = new SpeechSynthesisUtterance("Pesanan Anda telah selesai dan siap di jemput");
-                        pesanTTS.lang = 'id-ID';
-                        pesanTTS.rate = 1.0;
-                        window.speechSynthesis.speak(pesanTTS);
+                        window.speechSynthesis.cancel();
+                        const nama = lastOrder ? lastOrder.nama : "";
+                        const pesanSuara = new SpeechSynthesisUtterance(`Kak ${nama}, Pesanan Anda telah selesai dan siap di jemput`);
+                        pesanSuara.lang = 'id-ID';
+                        pesanSuara.rate = 1.0;
+                        window.speechSynthesis.speak(pesanSuara);
                     }
                 } else if(data.status === "Batal") {
                     localStorage.clear(); clearInterval(pollingTimer); alert("Maaf, pesanan Anda telah dibatalkan oleh barista."); location.reload();
