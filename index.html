@@ -32,7 +32,7 @@
 
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
-        /* PERBAIKAN: pointer-events dihapus agar tombol minus tetap bisa diklik */
+        /* PERBAIKAN: pointer-events dihapus agar tombol minus tetap aktif di item Sold Out */
         .sold-out { filter: grayscale(1); opacity: 0.6; position: relative; }
         .sold-out::after { 
             content: "SOLD OUT"; position: absolute; top: 50%; left: 50%; 
@@ -305,6 +305,10 @@
     }
 
     async function kirimPesanan() {
+        // PANCINGAN SUARA (VITAL UNTUK HP)
+        const unlockVoice = new SpeechSynthesisUtterance("");
+        window.speechSynthesis.speak(unlockVoice);
+
         const btn = document.getElementById('btnPesan');
         btn.disabled = true; btn.innerText = "MENGIRIM...";
         try {
@@ -312,7 +316,7 @@
             const latestMenus = await checkRes.json();
             for (let item of latestMenus) {
                 if (item.s === "Close" && keranjang[item.n] && keranjang[item.n].q > 0) {
-                    alert(`Maaf, menu "${item.n}" baru saja habis. Silakan kurangi (klik tombol minus) menu tersebut agar bisa memesan.`);
+                    alert(`Maaf, menu "${item.n}" baru saja habis. Silakan klik tombol minus (-) pada menu tersebut agar bisa memesan.`);
                     btn.disabled = false; btn.innerText = "PESAN SEKARANG";
                     loadMenu(); return;
                 }
@@ -374,14 +378,13 @@
                     msg.innerText = "PESANAN SIAP! SILAKAN JEMPUT 🔔"; msg.className = "p-4 rounded-2xl font-black text-xs bg-blue-600 text-white shadow-xl blink-notif";
                     document.getElementById('btnStopJemput').classList.remove('hidden');
                     
-                    // PERBAIKAN: Suara Bahasa Indonesia
+                    // TTS BAHASA INDONESIA (DIPERBAIKI UNTUK HP)
                     if(!isMuted && !alarmManuallyStopped) {
-                        if (!window.speechSynthesis.speaking) {
-                            const pesanSuara = new SpeechSynthesisUtterance("Pesanan Anda telah selesai dan siap di jemput");
-                            pesanSuara.lang = 'id-ID'; 
-                            pesanSuara.rate = 1.0; 
-                            window.speechSynthesis.speak(pesanSuara);
-                        }
+                        window.speechSynthesis.cancel(); // Bersihkan queue
+                        const pesanTTS = new SpeechSynthesisUtterance("Pesanan Anda telah selesai dan siap di jemput");
+                        pesanTTS.lang = 'id-ID';
+                        pesanTTS.rate = 1.0;
+                        window.speechSynthesis.speak(pesanTTS);
                     }
                 } else if(data.status === "Batal") {
                     localStorage.clear(); clearInterval(pollingTimer); alert("Maaf, pesanan Anda telah dibatalkan oleh barista."); location.reload();
@@ -393,9 +396,7 @@
     }
 
     function stopJemputAlarm() { 
-        // PERBAIKAN: Hentikan suara saat tombol diklik
         window.speechSynthesis.cancel();
-        soundJemput.pause(); soundJemput.currentTime = 0; 
         alarmManuallyStopped = true; 
         document.getElementById('btnStopJemput').innerText = "MENJEMPUT..."; 
         document.getElementById('btnStopJemput').classList.replace('bg-blue-600', 'bg-gray-400'); 
