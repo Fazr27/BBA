@@ -10,35 +10,34 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
         :root { --sb-green: #00704A; --sb-dark: #1E3932; }
-        body { font-family: 'Montserrat', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Montserrat', sans-serif; background-color: #f3f4f6; }
         .btn-emboss { box-shadow: 0 6px 0 #004d33, 0 8px 15px rgba(0,0,0,0.2); transition: all 0.1s ease; position: relative; top: 0; }
-        .btn-emboss:active:not(:disabled) { top: 4px; box-shadow: 0 2px 0 #004d33, 0 4px 6px rgba(0,0,0,0.2); }
-        .btn-emboss:disabled { box-shadow: none; top: 0; opacity: 0.5; filter: grayscale(0.5); cursor: not-allowed; }
+        .btn-emboss:active:not(:disabled) { top: 4px; box-shadow: 0 2px 0 #004d33; }
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .sold-out { filter: grayscale(1); opacity: 0.6; position: relative; }
-        .sold-out::after { content: "SOLD OUT"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); color: white; background: #dc2626; font-weight: 900; padding: 5px 15px; border-radius: 5px; font-size: 14px; z-index: 10; }
-        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .blink-notif { animation: pulse-red 1s infinite; }
-        #receipt-area { width: 58mm; padding: 15px; background: white; color: black; font-family: monospace; font-size: 12px; line-height: 1.3; }
-        .receipt-hidden { position: absolute; left: -9999px; }
+        .sold-out::after { content: "SOLD OUT"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); color: white; background: #dc2626; font-weight: 900; padding: 5px 15px; border-radius: 5px; font-size: 14px; }
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #00704A; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="pb-40">
     <nav class="bg-[#00704A] text-white p-4 sticky top-0 z-50 shadow-xl flex justify-between items-center">
-        <div id="displayShopName" class="font-black tracking-tighter text-xl italic uppercase">MEMUAT...</div>
+        <div id="displayShopName" class="font-black tracking-tighter text-xl italic uppercase">KEDAI KAMI</div>
         <button onclick="toggleMute()" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center transition active:scale-90">
             <i id="muteIcon" class="fas fa-volume-up"></i>
         </button>
     </nav>
 
-    <div class="container mx-auto px-4 py-6 max-w-md md:max-w-2xl transition-all duration-300">
+    <div class="container mx-auto px-4 py-6 max-w-md md:max-w-2xl">
         <div class="text-center mb-8 px-2 max-w-md mx-auto">
-            <img id="displayLogo" src="" class="mx-auto w-32 md:w-48 mb-4 rounded-full border-4 border-white shadow-xl transition-all duration-300" onerror="this.style.display='none'">
-            <div class="my-6">
-                <img id="displayBanner" src="" class="w-full rounded-3xl shadow-2xl border-2 border-white object-cover" alt="Banner" onerror="this.style.display='none'">
+            <div id="logoWrapper" class="hidden">
+                <img id="displayLogo" src="" class="mx-auto w-32 md:w-48 mb-4 rounded-full border-4 border-white shadow-xl">
             </div>
+            
+            <div id="bannerWrapper" class="hidden my-6">
+                <img id="displayBanner" src="" class="w-full rounded-3xl shadow-2xl border-2 border-white object-cover">
+            </div>
+
             <h2 id="displayFooterText" class="text-xl md:text-2xl font-black text-[#00704A] italic uppercase tracking-tighter">"..."</h2>
         </div>
 
@@ -48,10 +47,8 @@
         </div>
 
         <div class="glass-card p-5 rounded-3xl shadow-md mb-6 border-b-4 border-[#00704A]">
-            <label class="block font-black text-[10px] uppercase mb-2 text-gray-400">Pilih Nomor Meja Anda:</label>
-            <select id="nomorMeja" onchange="valBtn()" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-[#00704A] transition">
-                <option value="">-- Pilih Meja --</option>
-            </select>
+            <label class="block font-black text-[10px] uppercase mb-2 text-gray-400">Nomor Meja:</label>
+            <select id="nomorMeja" onchange="valBtn()" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-[#00704A] transition"></select>
         </div>
 
         <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -63,48 +60,28 @@
 
         <div id="ringkasanContainer" class="hidden glass-card p-6 rounded-3xl shadow-lg mb-8 border-l-8 border-[#00704A] border-r-8">
             <div id="ringkasanList" class="space-y-3 mb-4"></div>
-            <div class="bg-gray-50 p-3 rounded-2xl flex justify-between items-center">
-                <span class="font-black text-lg text-[#00704A]" id="totalTextRingkasan">Rp 0</span>
-            </div>
+            <div class="bg-gray-50 p-3 rounded-2xl flex justify-between items-center"><span class="font-black text-lg text-[#00704A]" id="totalTextRingkasan">Rp 0</span></div>
         </div>
 
         <div class="glass-card p-6 rounded-3xl shadow-lg mb-6">
-            <label class="block font-black text-xs uppercase mb-4 text-gray-400 text-center tracking-widest">Pilih Pembayaran:</label>
             <div class="space-y-3">
-                <label class="flex items-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer">
-                    <input type="radio" name="payment" value="Tunai" onchange="valBtn()" class="w-5 h-5 accent-[#00704A]">
-                    <div class="ml-4"><p class="font-black text-sm uppercase">Tunai</p></div>
-                </label>
-                <label class="flex items-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer">
-                    <input type="radio" name="payment" value="QRIS" onchange="valBtn()" class="w-5 h-5 accent-[#00704A]">
-                    <div class="ml-4"><p class="font-black text-sm uppercase text-[#00704A]">QRIS / E-Wallet</p></div>
-                </label>
-                <label class="flex items-center p-4 border-2 border-blue-100 rounded-2xl cursor-pointer">
-                    <input type="radio" name="payment" value="Transfer Bank" onchange="valBtn()" class="w-5 h-5 accent-blue-600">
-                    <div class="ml-4"><p class="font-black text-blue-800 text-sm uppercase">Info Transfer</p><p id="displayBankInfo" class="text-blue-600 font-black text-[10px] tracking-tighter">-</p></div>
-                </label>
+                <label class="flex items-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer"><input type="radio" name="payment" value="Tunai" onchange="valBtn()" class="w-5 h-5 accent-[#00704A]"><div class="ml-4 font-black text-sm uppercase">Tunai</div></label>
+                <label class="flex items-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer"><input type="radio" name="payment" value="QRIS" onchange="valBtn()" class="w-5 h-5 accent-[#00704A]"><div class="ml-4 font-black text-sm uppercase">QRIS / E-Wallet</div></label>
+                <label class="flex items-center p-4 border-2 border-blue-100 rounded-2xl cursor-pointer"><input type="radio" name="payment" value="Transfer Bank" onchange="valBtn()" class="w-5 h-5 accent-blue-600"><div class="ml-4"><p class="font-black text-blue-800 text-sm uppercase">Info Transfer</p><p id="displayBankInfo" class="text-blue-600 font-black text-[10px] tracking-tighter">-</p></div></label>
             </div>
             <div id="uploadArea" class="hidden mt-6 p-6 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-300 text-center">
-                <div id="qrisSection" class="hidden mb-4">
-                    <img id="qrisImg" src="" class="w-48 mx-auto rounded-2xl shadow-xl border-4 border-white mb-4" onerror="this.src='https://via.placeholder.com/200?text=QRIS'">
-                </div>
+                <div id="qrisSection" class="hidden mb-4"><img id="qrisImg" src="" class="w-48 mx-auto rounded-2xl shadow-xl border-4 border-white mb-4" onerror="this.src='https://via.placeholder.com/200?text=QRIS'"></div>
                 <input type="file" id="buktiFile" accept="image/*" onchange="valBtn()" class="text-xs w-full">
             </div>
         </div>
 
         <div id="statusContainer" class="hidden glass-card p-6 rounded-3xl shadow-2xl mb-6 border-t-4 border-[#00704A] text-center">
             <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="bg-gray-100 p-3 rounded-2xl border-2 border-gray-200">
-                    <p class="text-[9px] font-black text-gray-400 uppercase leading-none mb-1">Antrean Anda</p>
-                    <p id="txtNoAntrean" class="text-3xl font-black text-black">#0</p>
-                </div>
-                <div class="bg-[#D4E9E2] p-3 rounded-2xl border-2 border-[#00704A]">
-                    <p class="text-[9px] font-black text-[#00704A] uppercase leading-none mb-1">Diproses</p>
-                    <p id="txtSedangDiproses" class="text-3xl font-black text-[#00704A]">-</p>
-                </div>
+                <div class="bg-gray-100 p-3 rounded-2xl border-2 border-gray-200"><p class="text-[9px] font-black text-gray-400 uppercase leading-none mb-1">Antrean Anda</p><p id="txtNoAntrean" class="text-3xl font-black text-black">#0</p></div>
+                <div class="bg-[#D4E9E2] p-3 rounded-2xl border-2 border-[#00704A]"><p class="text-[9px] font-black text-[#00704A] uppercase leading-none mb-1">Diproses</p><p id="txtSedangDiproses" class="text-3xl font-black text-[#00704A]">-</p></div>
             </div>
             <div id="msgStatus" class="p-4 rounded-2xl font-black text-xs uppercase">Menunggu...</div>
-            <button id="btnStopJemput" onclick="stopJemputAlarm()" class="hidden w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase">Matikan Alarm / Jemput</button>
+            <button id="btnStopJemput" onclick="stopJemputAlarm()" class="hidden w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg">Matikan Alarm</button>
         </div>
     </div>
 
@@ -116,92 +93,63 @@
             <button id="btnMyBill" onclick="unduhStruk()" class="hidden btn-emboss w-full bg-blue-600 text-white font-black py-5 rounded-3xl uppercase text-xs">DOWNLOAD NOTA</button>
         </div>
     </div>
-
     <div class="receipt-hidden"><div id="receipt-area"></div></div>
 
 <script>
-    // URL SCRIPT ANDA
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzHrslJyD0y5SzV3vmRJuF3U5aXM8S_EsZYR1Gak568G7hJulQaVpKt4ntx2EJnhqaVAQ/exec';
-    
     let keranjang = {}; let isMuted = false; let lastOrder = null; let alarmManuallyStopped = false; let pollingTimer = null; let currentSettings = {};
 
     document.addEventListener('DOMContentLoaded', () => {
         initMeja();
         checkSavedOrder();
-        fastLoad(); // Gunakan fungsi muat cepat
+        fastLoad();
     });
 
-    // OPTIMASI: Parallel Fetch & Caching
     async function fastLoad() {
-        // 1. Coba ambil dari Cache Lokal (LocalStorage)
-        const cachedSettings = localStorage.getItem('cache_settings');
-        const cachedMenu = localStorage.getItem('cache_menu');
+        // 1. Ambil dari Cache Lokal Terlebih Dahulu agar INSTAN
+        const cS = localStorage.getItem('cache_settings');
+        const cM = localStorage.getItem('cache_menu');
+        if(cS) applyBrandingUI(JSON.parse(cS));
+        if(cM) { renderMenu(JSON.parse(cM)); document.getElementById('mainLoader')?.remove(); }
 
-        if(cachedSettings) {
-            applyBrandingUI(JSON.parse(cachedSettings));
-        }
-        if(cachedMenu) {
-            renderMenu(JSON.parse(cachedMenu));
-            document.getElementById('mainLoader')?.remove();
-        }
-
-        // 2. Ambil data terbaru dari Server secara PARALEL
+        // 2. Ambil data TERBARU dari server secara PARALEL
         try {
-            const [resSettings, resMenu] = await Promise.all([
+            const [resS, resM] = await Promise.all([
                 fetch(`${scriptURL}?getProfile=true`).then(r => r.json()),
                 fetch(`${scriptURL}?getMenu=true`).then(r => r.json())
             ]);
-
-            currentSettings = resSettings;
-            // Update Cache
-            localStorage.setItem('cache_settings', JSON.stringify(resSettings));
-            localStorage.setItem('cache_menu', JSON.stringify(resMenu));
-
-            // Update Tampilan dengan data terbaru
-            applyBrandingUI(resSettings);
-            renderMenu(resMenu);
-        } catch (e) {
-            console.log("Offline mode or error.");
-        }
+            currentSettings = resS;
+            // Simpan ke Cache untuk kunjungan berikutnya
+            localStorage.setItem('cache_settings', JSON.stringify(resS));
+            localStorage.setItem('cache_menu', JSON.stringify(resM));
+            // Update tampilan dengan data server (menghapus link rusak jika ada)
+            applyBrandingUI(resS);
+            renderMenu(resM);
+        } catch (e) { console.log("Gagal memuat data terbaru."); }
     }
 
     function applyBrandingUI(s) {
-        document.getElementById('displayShopName').innerText = s.STORE_NAME || "KEDAI";
+        document.getElementById('displayShopName').innerText = s.STORE_NAME || "KEDAI KAMI";
         document.getElementById('displayFooterText').innerText = `"${s.FOOTER_TEXT || "Selamat Menikmati"}"`;
         document.getElementById('displayBankInfo').innerText = (s.BANK_NAME + " - " + s.BANK_REK) || "-";
-        if(s.LOGO_URL) document.getElementById('displayLogo').src = s.LOGO_URL;
-        if(s.BANNER_URL) document.getElementById('displayBanner').src = s.BANNER_URL;
+        
+        const logo = document.getElementById('displayLogo');
+        const banner = document.getElementById('displayBanner');
+
+        // Pastikan hanya memuat jika link mengandung 'https' dan bukan pesan error
+        if(s.LOGO_URL && s.LOGO_URL.includes("https")) {
+            logo.src = s.LOGO_URL + "&t=" + new Date().getTime(); // Tambahkan 't' untuk paksa refresh gambar
+            document.getElementById('logoWrapper').classList.remove('hidden');
+        }
+        if(s.BANNER_URL && s.BANNER_URL.includes("https")) {
+            banner.src = s.BANNER_URL + "&t=" + new Date().getTime();
+            document.getElementById('bannerWrapper').classList.remove('hidden');
+        }
         if(s.QRIS_URL) document.getElementById('qrisImg').src = s.QRIS_URL;
     }
 
-    function renderMenu(menus) {
-        const container = document.getElementById('menuContainer');
-        container.innerHTML = "";
-        const categories = [...new Set(menus.map(m => m.cat))];
-        categories.forEach(cat => {
-            let catHtml = `<div class="mb-4 col-span-full"><h3 class="text-xs font-black uppercase tracking-widest border-l-4 border-[#00704A] pl-3 mb-4 text-gray-500">${cat}</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
-            menus.filter(m => m.cat === cat).forEach(item => {
-                const isClose = item.s === "Close";
-                const itemID = cleanID(item.n);
-                catHtml += `<div class="glass-card p-4 rounded-3xl flex justify-between items-center shadow-sm ${isClose ? 'sold-out' : 'active:bg-gray-50'}" onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}">
-                    <div class="flex-1"><p class="font-black text-gray-800 text-sm uppercase">${item.n}</p><p class="text-xs font-bold text-[#00704A] mt-1">Rp ${Number(item.h).toLocaleString('id-ID')}</p></div>
-                    <div class="flex items-center gap-4" onclick="event.stopPropagation()">
-                        <button onclick="qty('${item.n}',${item.h},-1)" class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center font-black">-</button>
-                        <span id="q-${itemID}" class="font-black text-sm w-4 text-center">0</span>
-                        <button onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}" ${isClose ? 'disabled' : ''} class="w-10 h-10 rounded-2xl bg-[#00704A] text-white flex items-center justify-center font-black">+</button>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML += catHtml + `</div></div>`;
-        });
-        // Restore quantities from cart if any
-        Object.keys(keranjang).forEach(name => {
-            const el = document.getElementById('q-' + cleanID(name));
-            if(el) el.innerText = keranjang[name].q;
-        });
-    }
-
-    // Fungsi utilitas sisanya (tetap sama tapi diperingkas)
+    // --- FUNGSI LAINNYA (TETAP SAMA) ---
+    function renderMenu(menus) { const container = document.getElementById('menuContainer'); container.innerHTML = ""; const categories = [...new Set(menus.map(m => m.cat))]; categories.forEach(cat => { let catHtml = `<div class="mb-4 col-span-full"><h3 class="text-xs font-black uppercase tracking-widest border-l-4 border-[#00704A] pl-3 mb-4 text-gray-500">${cat}</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`; menus.filter(m => m.cat === cat).forEach(item => { const isClose = item.s === "Close"; const itemID = cleanID(item.n); catHtml += `<div class="glass-card p-4 rounded-3xl flex justify-between items-center shadow-sm ${isClose ? 'sold-out' : 'active:bg-gray-50'}" onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}"><div class="flex-1"><p class="font-black text-gray-800 text-sm uppercase">${item.n}</p><p class="text-xs font-bold text-[#00704A] mt-1">Rp ${Number(item.h).toLocaleString('id-ID')}</p></div><div class="flex items-center gap-4" onclick="event.stopPropagation()"><button onclick="qty('${item.n}',${item.h},-1)" class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center font-black">-</button><span id="q-${itemID}" class="font-black text-sm w-4 text-center">0</span><button onclick="${isClose ? '' : `qty('${item.n}',${item.h},1)`}" ${isClose ? 'disabled' : ''} class="w-10 h-10 rounded-2xl bg-[#00704A] text-white flex items-center justify-center font-black shadow-md">+</button></div></div>`; }); container.innerHTML += catHtml + `</div></div>`; }); Object.keys(keranjang).forEach(name => { const el = document.getElementById('q-' + cleanID(name)); if(el) el.innerText = keranjang[name].q; }); }
     function cleanID(n) { return n.replace(/[^a-zA-Z0-9]/g, ''); }
     function initMeja() { const sel = document.getElementById('nomorMeja'); for(let i=1; i<=20; i++) { const opt = document.createElement('option'); opt.value = i; opt.innerText = `MEJA ${i}`; sel.appendChild(opt); } }
     function qty(n, h, c) { if(localStorage.getItem('kodpen_id')) return; if(!keranjang[n]) keranjang[n] = {q:0, h:h}; keranjang[n].q += c; if(keranjang[n].q < 0) keranjang[n].q = 0; const el = document.getElementById('q-' + cleanID(n)); if(el) el.innerText = keranjang[n].q; updateRingkasan(); }
@@ -212,7 +160,7 @@
     function startPolling(id) { setInterval(() => { if(document.hidden) return; fetch(`${scriptURL}?orderId=${id}`).then(r => r.json()).then(data => { if(data.status === "NotFound") { localStorage.clear(); location.reload(); } document.getElementById('txtNoAntrean').innerText = "#" + data.antrean; document.getElementById('txtSedangDiproses').innerText = data.sedangDiproses ? "#" + data.sedangDiproses : "-"; if(data.status === "Jemput") { document.getElementById('msgStatus').innerText = "SIAP JEMPUT 🔔"; document.getElementById('btnStopJemput').classList.remove('hidden'); if(!isMuted && !alarmManuallyStopped) { window.speechSynthesis.cancel(); const p = new SpeechSynthesisUtterance(`kakak ${lastOrder.nama}, Pesanan Anda siap`); p.lang = 'id-ID'; window.speechSynthesis.speak(p); } } else if(data.status === "Selesai") { localStorage.clear(); location.reload(); } }); }, 6000); }
     function stopJemputAlarm() { window.speechSynthesis.cancel(); alarmManuallyStopped = true; }
     function toggleMute() { isMuted = !isMuted; document.getElementById('muteIcon').className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'; }
-    function unduhStruk() { /* Fungsi screenshot nota tetap sama */ }
+    function unduhStruk() { /* Screenshot Nota */ }
 </script>
 </body>
 </html>
